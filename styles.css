@@ -1,0 +1,4 @@
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('chrome-extension://__MSG_@@extension_id__/fonts/OpenDyslexic-Regular.otf') format('opentype');
+}

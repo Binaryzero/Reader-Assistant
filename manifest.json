@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "Reading Assistant",
+    "version": "1.0",
+    "description": "Enhance your reading experience with customizable features",
+    "permissions": ["activeTab", "storage"],
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"],
+        "run_at": "document_start"
+      }
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": ["fonts/OpenDyslexic-Regular.otf"],
+        "matches": ["<all_urls>"]
+      }
+    ]
+  }
