@@ -1,5 +1,4 @@
 // content.js
-
 let currentURL = '';
 let siteSettings = {
   darkMode: false,
@@ -7,10 +6,10 @@ let siteSettings = {
   openDyslexicActive: false,
   readerModeActive: false,
   lineSpacing: 1.5,
-  columnWidth: 60
+  columnWidth: 80
 };
 
-const fontSizeStep = 0.01;
+const fontSizeStep = 0.1;
 
 function getCurrentURL() {
   return window.location.hostname;
@@ -123,10 +122,17 @@ function updateStyles() {
         box-sizing: border-box;
       }
       .reader-content {
-        width: ${siteSettings.columnWidth}%;
-        max-width: 1000px;
+        width: 100%;
+        max-width: ${siteSettings.columnWidth}%;
         margin: 0 auto;
         line-height: ${siteSettings.lineSpacing};
+        font-size: ${16 + siteSettings.fontSizeAdjustment * 10}px;
+      }
+      @media (max-width: 768px) {
+        .reader-content {
+          width: 95%;
+          max-width: none;
+        }
       }
       .reader-controls {
         position: fixed;
@@ -180,6 +186,7 @@ function enableReaderMode() {
     document.body.innerHTML = '';
     document.body.appendChild(readerModeContainer);
     document.body.classList.add('reader-mode');
+    addReaderModeListeners();
   }
 }
 
@@ -210,16 +217,27 @@ function createReaderModeContainer(content) {
     <div class="reader-content">${content}</div>
   `;
   
-  container.querySelector('#toggleDarkMode').addEventListener('click', toggleDarkMode);
-  container.querySelector('#increaseFontSize').addEventListener('click', () => adjustFontSize(1));
-  container.querySelector('#decreaseFontSize').addEventListener('click', () => adjustFontSize(-1));
-  container.querySelector('#toggleOpenDyslexic').addEventListener('click', toggleOpenDyslexic);
-  container.querySelector('#increaseLineSpacing').addEventListener('click', () => adjustLineSpacing(0.1));
-  container.querySelector('#decreaseLineSpacing').addEventListener('click', () => adjustLineSpacing(-0.1));
-  container.querySelector('#increaseWidth').addEventListener('click', () => adjustColumnWidth(5));
-  container.querySelector('#decreaseWidth').addEventListener('click', () => adjustColumnWidth(-5));
-  
   return container;
+}
+
+function addReaderModeListeners() {
+  const addListener = (id, func) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener('click', func);
+    } else {
+      console.error(`Element with id '${id}' not found`);
+    }
+  };
+
+  addListener('toggleDarkMode', toggleDarkMode);
+  addListener('increaseFontSize', () => adjustFontSize(1));
+  addListener('decreaseFontSize', () => adjustFontSize(-1));
+  addListener('toggleOpenDyslexic', toggleOpenDyslexic);
+  addListener('increaseLineSpacing', () => adjustLineSpacing(0.1));
+  addListener('decreaseLineSpacing', () => adjustLineSpacing(-0.1));
+  addListener('increaseWidth', () => adjustColumnWidth(5));
+  addListener('decreaseWidth', () => adjustColumnWidth(-5));
 }
 
 function adjustLineSpacing(change) {
@@ -229,7 +247,7 @@ function adjustLineSpacing(change) {
 }
 
 function adjustColumnWidth(change) {
-  siteSettings.columnWidth = Math.max(30, Math.min(90, siteSettings.columnWidth + change));
+  siteSettings.columnWidth = Math.max(50, Math.min(100, siteSettings.columnWidth + change));
   applySettings();
   saveSettings();
 }
@@ -242,7 +260,7 @@ function resetSiteSettings() {
       openDyslexicActive: false,
       readerModeActive: false,
       lineSpacing: 1.5,
-      columnWidth: 60
+      columnWidth: 80
     };
     applySettings();
   });
@@ -250,11 +268,18 @@ function resetSiteSettings() {
 
 // Initialize extension
 function initExtension() {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadSettings);
-  } else {
-    loadSettings();
-  }
+  loadSettings();
+  
+  // Set up MutationObserver to watch for DOM changes
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'childList') {
+        applySettings();
+      }
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 // Listen for messages from the popup
@@ -275,4 +300,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 // Run the initialization
-initExtension();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initExtension);
+} else {
+  initExtension();
+}
