@@ -6,8 +6,8 @@ module.exports = {
     popup: './popup.js'
   },
   output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, '')
+    filename: '[name].js',
+    path: path.resolve(__dirname, 'dist')
   },
   mode: 'production'
 };
