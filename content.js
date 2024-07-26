@@ -92,17 +92,13 @@ function updateStyles() {
     }
 
     body {
-      ${siteSettings.darkMode ? `
-        background-color: var(--main-bg) !important;
-        color: var(--main-text) !important;
-      ` : ''}
+      background-color: var(--main-bg) !important;
+      color: var(--main-text) !important;
     }
 
     /* Apply dark mode styles to specific elements */
     p, h1, h2, h3, h4, h5, h6, span, div:not([style*="background"]) {
-      ${siteSettings.darkMode ? `
-        color: var(--main-text) !important;
-      ` : ''}
+      color: var(--main-text) !important;
     }
 
     /* Preserve original colors for media elements */
