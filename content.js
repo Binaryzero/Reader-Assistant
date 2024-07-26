@@ -84,48 +84,40 @@ function updateStyles() {
       src: url('chrome-extension://__MSG_@@extension_id__/fonts/OpenDyslexic-Regular.otf') format('opentype');
     }
 
-    html {
-      --main-bg: ${siteSettings.darkMode ? '#1a1a1a' : '#ffffff'};
-      --main-text: ${siteSettings.darkMode ? '#f0f0f0' : '#333333'};
-      --link-color: ${siteSettings.darkMode ? '#6699cc' : '#0000EE'};
-      --border-color: ${siteSettings.darkMode ? '#555' : '#ccc'};
-      background-color: var(--main-bg) !important;
-    }
-
-    body {
+    html, body {
       background-color: var(--main-bg) !important;
       color: var(--main-text) !important;
     }
 
-    /* Apply dark mode styles to specific elements */
-    p, h1, h2, h3, h4, h5, h6, span, div:not([style*="background"]) {
-      color: var(--main-text) !important;
-    }
-
-    /* Ensure all block-level elements have the correct background */
-    div, section, article, aside, nav, header, footer {
+    /* Apply dark mode styles to all elements */
+    * {
       background-color: var(--main-bg) !important;
+      color: var(--main-text) !important;
+      border-color: var(--border-color) !important;
     }
 
     /* Preserve original colors for media elements */
-    img, video, picture, [style*="background-image"], iframe, .preserve-color {
+    img, video, picture, canvas, svg, [style*="background-image"], iframe, .preserve-color {
+      background-color: transparent !important;
       filter: none !important;
     }
 
     /* Adjust input elements */
     input, textarea, select {
-      ${siteSettings.darkMode ? `
-        background-color: #222 !important;
-        color: #ddd !important;
-        border-color: #444 !important;
-      ` : ''}
+      background-color: ${siteSettings.darkMode ? '#222' : '#fff'} !important;
+      color: ${siteSettings.darkMode ? '#ddd' : '#333'} !important;
+      border-color: ${siteSettings.darkMode ? '#444' : '#ccc'} !important;
     }
 
     /* Adjust link colors */
     a, a:visited, a:active {
-      ${siteSettings.darkMode ? `
-        color: #3391ff !important;
-      ` : ''}
+      color: var(--link-color) !important;
+    }
+
+    /* Override styles for specific elements that might need different treatment */
+    pre, code {
+      background-color: ${siteSettings.darkMode ? '#2d2d2d' : '#f0f0f0'} !important;
+      color: ${siteSettings.darkMode ? '#f0f0f0' : '#333'} !important;
     }
 
     *:not(img) {
