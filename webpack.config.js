@@ -9,5 +9,12 @@ module.exports = {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist')
   },
-  mode: 'production'
+  mode: 'production',
+  resolve: {
+    fallback: {
+      "fs": false,
+      "path": false,
+      "url": false
+    }
+  }
 };
