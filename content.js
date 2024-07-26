@@ -104,10 +104,13 @@ function updateStyles() {
       ` : ''}
     }
 
-    img, video, picture, [style*="background-image"] {
+    video, picture, [style*="background-image"] {
       ${siteSettings.darkMode ? `
         filter: invert(100%) hue-rotate(180deg) !important;
       ` : ''}
+    }
+    img {
+      filter: none !important;
     }
 
     /* Preserve original colors for these elements */
@@ -133,9 +136,12 @@ function updateStyles() {
       ` : ''}
     }
 
-    * {
+    *:not(img) {
       ${siteSettings.fontSizeAdjustment !== 0 ? `font-size: calc(1em + ${siteSettings.fontSizeAdjustment}em) !important;` : ''}
       ${siteSettings.openDyslexicActive ? "font-family: 'OpenDyslexic', sans-serif !important;" : ""}
+    }
+    img {
+      filter: none !important;
     }
 
     ${siteSettings.readerModeActive ? `
