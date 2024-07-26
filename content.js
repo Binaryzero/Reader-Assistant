@@ -264,12 +264,21 @@ function disableReaderMode() {
   location.reload();
 }
 
-import { Readability } from '@mozilla/readability';
-
 function extractMainContent() {
-  const documentClone = document.cloneNode(true);
-  const article = new Readability(documentClone).parse();
-  return article ? article.content : document.body.innerHTML;
+  // Since we can't use the Readability library directly in a content script,
+  // we'll use a simplified content extraction method
+  const article = document.querySelector('article');
+  if (article) {
+    return article.innerHTML;
+  }
+  
+  const main = document.querySelector('main');
+  if (main) {
+    return main.innerHTML;
+  }
+  
+  // If no article or main tag is found, return the body content
+  return document.body.innerHTML;
 }
 
 function createReaderModeContainer(content) {
