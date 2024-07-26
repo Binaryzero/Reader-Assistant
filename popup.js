@@ -9,7 +9,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function sendMessage(action) {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, {action: action});
+      if (chrome.runtime.lastError) {
+        console.error("Error querying tabs:", chrome.runtime.lastError);
+        return;
+      }
+      if (tabs.length === 0) {
+        console.error("No active tabs found");
+        return;
+      }
+      chrome.tabs.sendMessage(tabs[0].id, {action: action}, function(response) {
+        if (chrome.runtime.lastError) {
+          console.error("Error sending message:", chrome.runtime.lastError);
+        } else {
+          console.log("Message sent successfully:", action);
+        }
+      });
     });
   }
 

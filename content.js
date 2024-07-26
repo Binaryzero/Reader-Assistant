@@ -349,6 +349,7 @@ function initExtension() {
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log("Message received in content script:", request);
   const actions = {
     toggleDarkMode,
     increaseFontSize: () => adjustFontSize(1),
@@ -360,7 +361,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (actions[request.action]) {
     actions[request.action]();
+    sendResponse({status: "Action executed: " + request.action});
+  } else {
+    console.error("Unknown action:", request.action);
+    sendResponse({status: "Error: Unknown action"});
   }
+  return true; // Indicates that the response will be sent asynchronously
 });
 
 // Run the initialization
