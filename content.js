@@ -45,8 +45,14 @@ function applySettings() {
     if (siteSettings.readerModeActive) {
       enableReaderMode();
     }
+    if (siteSettings.darkMode) {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
   } else {
     removeInjectedStyles();
+    document.documentElement.classList.remove('dark-mode');
     if (document.body.classList.contains('reader-mode')) {
       disableReaderMode();
     }
@@ -85,28 +91,46 @@ function updateStyles() {
       --border-color: ${siteSettings.darkMode ? '#555' : '#ccc'};
     }
 
-    html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+    html {
       ${siteSettings.darkMode ? `
-        background-color: var(--main-bg) !important;
-        color: var(--main-text) !important;
-        border-color: var(--border-color) !important;
+        filter: invert(100%) hue-rotate(180deg) !important;
+        background-color: #000 !important;
       ` : ''}
     }
 
-    a, a:visited, a:active {
-      ${siteSettings.darkMode ? `color: var(--link-color) !important;` : ''}
+    body {
+      ${siteSettings.darkMode ? `
+        background-color: #fff !important;
+      ` : ''}
     }
 
+    img, video, picture, [style*="background-image"] {
+      ${siteSettings.darkMode ? `
+        filter: invert(100%) hue-rotate(180deg) !important;
+      ` : ''}
+    }
+
+    /* Preserve original colors for these elements */
+    iframe, .preserve-color {
+      ${siteSettings.darkMode ? `
+        filter: invert(100%) hue-rotate(180deg) !important;
+      ` : ''}
+    }
+
+    /* Adjust input elements */
     input, textarea, select {
       ${siteSettings.darkMode ? `
-        background-color: #333 !important;
-        color: var(--main-text) !important;
-        border-color: var(--border-color) !important;
+        background-color: #222 !important;
+        color: #ddd !important;
+        border-color: #444 !important;
       ` : ''}
     }
 
-    img, video, picture {
-      ${siteSettings.darkMode ? `filter: brightness(0.8) contrast(1.2) !important;` : ''}
+    /* Adjust link colors */
+    a, a:visited, a:active {
+      ${siteSettings.darkMode ? `
+        color: #3391ff !important;
+      ` : ''}
     }
 
     * {
