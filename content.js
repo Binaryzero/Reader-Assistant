@@ -84,11 +84,12 @@ function updateStyles() {
       src: url('chrome-extension://__MSG_@@extension_id__/fonts/OpenDyslexic-Regular.otf') format('opentype');
     }
 
-    :root {
+    html {
       --main-bg: ${siteSettings.darkMode ? '#1a1a1a' : '#ffffff'};
       --main-text: ${siteSettings.darkMode ? '#f0f0f0' : '#333333'};
       --link-color: ${siteSettings.darkMode ? '#6699cc' : '#0000EE'};
       --border-color: ${siteSettings.darkMode ? '#555' : '#ccc'};
+      background-color: var(--main-bg) !important;
     }
 
     body {
@@ -99,6 +100,11 @@ function updateStyles() {
     /* Apply dark mode styles to specific elements */
     p, h1, h2, h3, h4, h5, h6, span, div:not([style*="background"]) {
       color: var(--main-text) !important;
+    }
+
+    /* Ensure all block-level elements have the correct background */
+    div, section, article, aside, nav, header, footer {
+      background-color: var(--main-bg) !important;
     }
 
     /* Preserve original colors for media elements */
