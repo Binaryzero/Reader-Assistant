@@ -91,33 +91,23 @@ function updateStyles() {
       --border-color: ${siteSettings.darkMode ? '#555' : '#ccc'};
     }
 
-    html {
-      ${siteSettings.darkMode ? `
-        filter: invert(100%) hue-rotate(180deg) !important;
-        background-color: #000 !important;
-      ` : ''}
-    }
-
     body {
       ${siteSettings.darkMode ? `
-        background-color: #fff !important;
+        background-color: var(--main-bg) !important;
+        color: var(--main-text) !important;
       ` : ''}
     }
 
-    video, picture, [style*="background-image"] {
+    /* Apply dark mode styles to specific elements */
+    p, h1, h2, h3, h4, h5, h6, span, div:not([style*="background"]) {
       ${siteSettings.darkMode ? `
-        filter: invert(100%) hue-rotate(180deg) !important;
+        color: var(--main-text) !important;
       ` : ''}
     }
-    img {
+
+    /* Preserve original colors for media elements */
+    img, video, picture, [style*="background-image"], iframe, .preserve-color {
       filter: none !important;
-    }
-
-    /* Preserve original colors for these elements */
-    iframe, .preserve-color {
-      ${siteSettings.darkMode ? `
-        filter: invert(100%) hue-rotate(180deg) !important;
-      ` : ''}
     }
 
     /* Adjust input elements */
