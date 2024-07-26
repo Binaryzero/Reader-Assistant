@@ -1,34 +1,28 @@
 // content.js
+
+// Constants
+const FONT_SIZE_STEP = 0.025;
+const MIN_LINE_SPACING = 1;
+const MAX_LINE_SPACING = 2;
+const MIN_COLUMN_WIDTH = 50;
+const MAX_COLUMN_WIDTH = 100;
+const DEFAULT_LINE_SPACING = 1.5;
+const DEFAULT_COLUMN_WIDTH = 80;
+
+// State
 let currentURL = '';
 let siteSettings = {
   darkMode: false,
   fontSizeAdjustment: 0,
   openDyslexicActive: false,
   readerModeActive: false,
-  lineSpacing: 1.5,
-  columnWidth: 80
+  lineSpacing: DEFAULT_LINE_SPACING,
+  columnWidth: DEFAULT_COLUMN_WIDTH
 };
 
-const fontSizeStep = 0.025;
-
+// Utility Functions
 function getCurrentURL() {
   return window.location.hostname;
-}
-
-function loadSettings() {
-  currentURL = getCurrentURL();
-  chrome.storage.sync.get(currentURL, (result) => {
-    if (result[currentURL]) {
-      siteSettings = result[currentURL];
-    }
-    applySettings();
-  });
-}
-
-function saveSettings() {
-  let data = {};
-  data[currentURL] = siteSettings;
-  chrome.storage.sync.set(data);
 }
 
 function isAnyFeatureActive() {
@@ -38,27 +32,49 @@ function isAnyFeatureActive() {
          siteSettings.readerModeActive;
 }
 
-function applySettings() {
-  if (isAnyFeatureActive()) {
-    injectStyles();
-    updateStyles();
-    if (siteSettings.readerModeActive) {
-      enableReaderMode();
+// Settings Management
+function loadSettings() {
+  currentURL = getCurrentURL();
+  chrome.storage.sync.get(currentURL, (result) => {
+    if (chrome.runtime.lastError) {
+      console.error('Error loading settings:', chrome.runtime.lastError);
+      return;
     }
-    if (siteSettings.darkMode) {
-      document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
+    if (result[currentURL]) {
+      siteSettings = { ...siteSettings, ...result[currentURL] };
     }
-  } else {
-    removeInjectedStyles();
-    document.documentElement.classList.remove('dark-mode');
-    if (document.body.classList.contains('reader-mode')) {
-      disableReaderMode();
-    }
-  }
+    applySettings();
+  });
 }
 
+function saveSettings() {
+  const data = { [currentURL]: siteSettings };
+  chrome.storage.sync.set(data, () => {
+    if (chrome.runtime.lastError) {
+      console.error('Error saving settings:', chrome.runtime.lastError);
+    }
+  });
+}
+
+function resetSiteSettings() {
+  chrome.storage.sync.remove(currentURL, () => {
+    if (chrome.runtime.lastError) {
+      console.error('Error resetting settings:', chrome.runtime.lastError);
+      return;
+    }
+    siteSettings = {
+      darkMode: false,
+      fontSizeAdjustment: 0,
+      openDyslexicActive: false,
+      readerModeActive: false,
+      lineSpacing: DEFAULT_LINE_SPACING,
+      columnWidth: DEFAULT_COLUMN_WIDTH
+    };
+    applySettings();
+  });
+}
+
+// Style Management
 function injectStyles() {
   if (!document.getElementById('extension-styles')) {
     const style = document.createElement('style');
@@ -78,27 +94,65 @@ function updateStyles() {
   const style = document.getElementById('extension-styles');
   if (!style) return;
 
+  const darkModeStyles = `
+    html, body {
+      background-color: #222 !important;
+      color: #ddd !important;
+    }
+    * {
+      color: #ddd !important;
+      border-color: #444 !important;
+    }
+    div, p, header, footer, nav, article, aside, section, main {
+      background-color: #222 !important;
+    }
+    input, textarea, select {
+      background-color: #333 !important;
+      color: #ddd !important;
+      border-color: #555 !important;
+    }
+    a, a:visited, a:active {
+      color: #9cf !important;
+    }
+    pre, code {
+      background-color: #2d2d2d !important;
+      color: #f0f0f0 !important;
+    }
+  `;
+
+  const lightModeStyles = `
+    html, body {
+      background-color: #fff !important;
+      color: #333 !important;
+    }
+    * {
+      color: #333 !important;
+      border-color: #ccc !important;
+    }
+    div, p, header, footer, nav, article, aside, section, main {
+      background-color: #fff !important;
+    }
+    input, textarea, select {
+      background-color: #fff !important;
+      color: #333 !important;
+      border-color: #ccc !important;
+    }
+    a, a:visited, a:active {
+      color: #0645ad !important;
+    }
+    pre, code {
+      background-color: #f0f0f0 !important;
+      color: #333 !important;
+    }
+  `;
+
   style.textContent = `
     @font-face {
       font-family: 'OpenDyslexic';
       src: url('chrome-extension://__MSG_@@extension_id__/fonts/OpenDyslexic-Regular.otf') format('opentype');
     }
 
-    html, body {
-      background-color: ${siteSettings.darkMode ? '#222' : '#fff'} !important;
-      color: ${siteSettings.darkMode ? '#ddd' : '#333'} !important;
-    }
-
-    /* Apply dark mode styles to all elements */
-    * {
-      color: ${siteSettings.darkMode ? '#ddd' : '#333'} !important;
-      border-color: ${siteSettings.darkMode ? '#444' : '#ccc'} !important;
-    }
-
-    /* Apply background color to block-level elements */
-    div, p, header, footer, nav, article, aside, section, main {
-      background-color: ${siteSettings.darkMode ? '#222' : '#fff'} !important;
-    }
+    ${siteSettings.darkMode ? darkModeStyles : lightModeStyles}
 
     /* Preserve original colors for media elements */
     img, video, picture, canvas, svg, [style*="background-image"], iframe, .preserve-color {
@@ -106,30 +160,9 @@ function updateStyles() {
       filter: none !important;
     }
 
-    /* Adjust input elements */
-    input, textarea, select {
-      background-color: ${siteSettings.darkMode ? '#222' : '#fff'} !important;
-      color: ${siteSettings.darkMode ? '#ddd' : '#333'} !important;
-      border-color: ${siteSettings.darkMode ? '#444' : '#ccc'} !important;
-    }
-
-    /* Adjust link colors */
-    a, a:visited, a:active {
-      color: var(--link-color) !important;
-    }
-
-    /* Override styles for specific elements that might need different treatment */
-    pre, code {
-      background-color: ${siteSettings.darkMode ? '#2d2d2d' : '#f0f0f0'} !important;
-      color: ${siteSettings.darkMode ? '#f0f0f0' : '#333'} !important;
-    }
-
     *:not(img) {
       ${siteSettings.fontSizeAdjustment !== 0 ? `font-size: calc(1em * (1 + ${siteSettings.fontSizeAdjustment * 0.5})) !important;` : ''}
       ${siteSettings.openDyslexicActive ? "font-family: 'OpenDyslexic', sans-serif !important;" : ""}
-    }
-    img {
-      filter: none !important;
     }
 
     ${siteSettings.readerModeActive ? `
@@ -156,23 +189,28 @@ function updateStyles() {
         position: fixed;
         top: 10px;
         right: 10px;
-        background: var(--main-bg);
+        background: ${siteSettings.darkMode ? '#333' : '#f0f0f0'};
         padding: 10px;
         border-radius: 5px;
         z-index: 9999;
       }
       .reader-controls button {
         margin: 0 5px;
-        background: ${siteSettings.darkMode ? '#555' : '#f0f0f0'};
-        color: var(--main-text);
+        background: ${siteSettings.darkMode ? '#555' : '#ddd'};
+        color: ${siteSettings.darkMode ? '#ddd' : '#333'};
         border: none;
         padding: 5px 10px;
         cursor: pointer;
+        border-radius: 3px;
+      }
+      .reader-controls button:hover {
+        background: ${siteSettings.darkMode ? '#777' : '#bbb'};
       }
     ` : ''}
   `;
 }
 
+// Feature Toggle Functions
 function toggleDarkMode() {
   siteSettings.darkMode = !siteSettings.darkMode;
   applySettings();
@@ -180,7 +218,7 @@ function toggleDarkMode() {
 }
 
 function adjustFontSize(change) {
-  siteSettings.fontSizeAdjustment += change * fontSizeStep;
+  siteSettings.fontSizeAdjustment += change * FONT_SIZE_STEP;
   applySettings();
   saveSettings();
 }
@@ -197,6 +235,19 @@ function toggleReaderMode() {
   saveSettings();
 }
 
+function adjustLineSpacing(change) {
+  siteSettings.lineSpacing = Math.max(MIN_LINE_SPACING, Math.min(MAX_LINE_SPACING, siteSettings.lineSpacing + change));
+  applySettings();
+  saveSettings();
+}
+
+function adjustColumnWidth(change) {
+  siteSettings.columnWidth = Math.max(MIN_COLUMN_WIDTH, Math.min(MAX_COLUMN_WIDTH, siteSettings.columnWidth + change));
+  applySettings();
+  saveSettings();
+}
+
+// Reader Mode Functions
 function enableReaderMode() {
   if (!document.body.classList.contains('reader-mode')) {
     const content = extractMainContent();
@@ -223,14 +274,15 @@ function createReaderModeContainer(content) {
   container.className = 'reader-mode-container';
   container.innerHTML = `
     <div class="reader-controls">
-      <button id="toggleDarkMode">🌓</button>
-      <button id="increaseFontSize">A+</button>
-      <button id="decreaseFontSize">A-</button>
-      <button id="toggleOpenDyslexic">Dy</button>
-      <button id="increaseLineSpacing">↕+</button>
-      <button id="decreaseLineSpacing">↕-</button>
-      <button id="increaseWidth">↔+</button>
-      <button id="decreaseWidth">↔-</button>
+      <button id="toggleDarkMode" title="Toggle Dark Mode">🌓</button>
+      <button id="increaseFontSize" title="Increase Font Size">A+</button>
+      <button id="decreaseFontSize" title="Decrease Font Size">A-</button>
+      <button id="toggleOpenDyslexic" title="Toggle OpenDyslexic Font">Dy</button>
+      <button id="increaseLineSpacing" title="Increase Line Spacing">↕+</button>
+      <button id="decreaseLineSpacing" title="Decrease Line Spacing">↕-</button>
+      <button id="increaseWidth" title="Increase Column Width">↔+</button>
+      <button id="decreaseWidth" title="Decrease Column Width">↔-</button>
+      <button id="exitReaderMode" title="Exit Reader Mode">✕</button>
     </div>
     <div class="reader-content">${content}</div>
   `;
@@ -256,35 +308,27 @@ function addReaderModeListeners() {
   addListener('decreaseLineSpacing', () => adjustLineSpacing(-0.1));
   addListener('increaseWidth', () => adjustColumnWidth(5));
   addListener('decreaseWidth', () => adjustColumnWidth(-5));
+  addListener('exitReaderMode', toggleReaderMode);
 }
 
-function adjustLineSpacing(change) {
-  siteSettings.lineSpacing = Math.max(1, Math.min(2, siteSettings.lineSpacing + change));
-  applySettings();
-  saveSettings();
+// Main Functions
+function applySettings() {
+  if (isAnyFeatureActive()) {
+    injectStyles();
+    updateStyles();
+    if (siteSettings.readerModeActive) {
+      enableReaderMode();
+    }
+    document.documentElement.classList.toggle('dark-mode', siteSettings.darkMode);
+  } else {
+    removeInjectedStyles();
+    document.documentElement.classList.remove('dark-mode');
+    if (document.body.classList.contains('reader-mode')) {
+      disableReaderMode();
+    }
+  }
 }
 
-function adjustColumnWidth(change) {
-  siteSettings.columnWidth = Math.max(50, Math.min(100, siteSettings.columnWidth + change));
-  applySettings();
-  saveSettings();
-}
-
-function resetSiteSettings() {
-  chrome.storage.sync.remove(currentURL, () => {
-    siteSettings = {
-      darkMode: false,
-      fontSizeAdjustment: 0,
-      openDyslexicActive: false,
-      readerModeActive: false,
-      lineSpacing: 1.5,
-      columnWidth: 80
-    };
-    applySettings();
-  });
-}
-
-// Initialize extension
 function initExtension() {
   loadSettings();
   
@@ -302,18 +346,17 @@ function initExtension() {
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'toggleDarkMode') {
-    toggleDarkMode();
-  } else if (request.action === 'increaseFontSize') {
-    adjustFontSize(1);
-  } else if (request.action === 'decreaseFontSize') {
-    adjustFontSize(-1);
-  } else if (request.action === 'toggleOpenDyslexic') {
-    toggleOpenDyslexic();
-  } else if (request.action === 'toggleReaderMode') {
-    toggleReaderMode();
-  } else if (request.action === 'resetSite') {
-    resetSiteSettings();
+  const actions = {
+    toggleDarkMode,
+    increaseFontSize: () => adjustFontSize(1),
+    decreaseFontSize: () => adjustFontSize(-1),
+    toggleOpenDyslexic,
+    toggleReaderMode,
+    resetSite: resetSiteSettings
+  };
+
+  if (actions[request.action]) {
+    actions[request.action]();
   }
 });
 
