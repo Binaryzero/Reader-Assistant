@@ -230,15 +230,21 @@ function toggleOpenDyslexic() {
 }
 
 function toggleReaderMode() {
+  console.log("Toggling reader mode. Current state:", siteSettings.readerModeActive);
   siteSettings.readerModeActive = !siteSettings.readerModeActive;
+  console.log("New reader mode state:", siteSettings.readerModeActive);
+  
   if (siteSettings.readerModeActive) {
+    console.log("Enabling reader mode");
     enableReaderMode();
   } else {
+    console.log("Disabling reader mode");
     disableReaderMode();
   }
+  
   applySettings();
   saveSettings();
-  console.log("Reader mode toggled:", siteSettings.readerModeActive);
+  console.log("Reader mode toggle complete. Current state:", siteSettings.readerModeActive);
 }
 
 function enableReaderMode() {
@@ -382,12 +388,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (actions[request.action]) {
     console.log("Executing action:", request.action);
-    actions[request.action]();
-    console.log("Action executed:", request.action);
-    sendResponse({status: "Action executed: " + request.action});
+    try {
+      actions[request.action]();
+      console.log("Action executed successfully:", request.action);
+      if (request.action === 'toggleReaderMode') {
+        console.log("Reader mode state after toggle:", siteSettings.readerModeActive);
+      }
+      sendResponse({status: "Action executed: " + request.action, success: true});
+    } catch (error) {
+      console.error("Error executing action:", request.action, error);
+      sendResponse({status: "Error executing action: " + request.action, success: false, error: error.message});
+    }
   } else {
     console.error("Unknown action:", request.action);
-    sendResponse({status: "Error: Unknown action"});
+    sendResponse({status: "Error: Unknown action", success: false});
   }
   return true; // Indicates that the response will be sent asynchronously
 });
