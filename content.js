@@ -238,6 +238,19 @@ function toggleReaderMode() {
   }
   applySettings();
   saveSettings();
+  console.log("Reader mode toggled:", siteSettings.readerModeActive);
+}
+
+function enableReaderMode() {
+  console.log("Enabling reader mode");
+  if (!document.body.classList.contains('reader-mode')) {
+    const content = extractMainContent();
+    const readerModeContainer = createReaderModeContainer(content);
+    document.body.innerHTML = '';
+    document.body.appendChild(readerModeContainer);
+    document.body.classList.add('reader-mode');
+    addReaderModeListeners();
+  }
 }
 
 function adjustLineSpacing(change) {
@@ -368,7 +381,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   };
 
   if (actions[request.action]) {
+    console.log("Executing action:", request.action);
     actions[request.action]();
+    console.log("Action executed:", request.action);
     sendResponse({status: "Action executed: " + request.action});
   } else {
     console.error("Unknown action:", request.action);
