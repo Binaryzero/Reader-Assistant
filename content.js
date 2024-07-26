@@ -9,7 +9,7 @@ let siteSettings = {
   columnWidth: 80
 };
 
-const fontSizeStep = 0.1;
+const fontSizeStep = 0.05;
 
 function getCurrentURL() {
   return window.location.hostname;
@@ -125,7 +125,7 @@ function updateStyles() {
     }
 
     *:not(img) {
-      ${siteSettings.fontSizeAdjustment !== 0 ? `font-size: calc(1em + ${siteSettings.fontSizeAdjustment}em) !important;` : ''}
+      ${siteSettings.fontSizeAdjustment !== 0 ? `font-size: calc(1em * (1 + ${siteSettings.fontSizeAdjustment})) !important;` : ''}
       ${siteSettings.openDyslexicActive ? "font-family: 'OpenDyslexic', sans-serif !important;" : ""}
     }
     img {
@@ -144,7 +144,7 @@ function updateStyles() {
         max-width: ${siteSettings.columnWidth}%;
         margin: 0 auto;
         line-height: ${siteSettings.lineSpacing};
-        font-size: ${16 + siteSettings.fontSizeAdjustment * 10}px;
+        font-size: ${16 * (1 + siteSettings.fontSizeAdjustment)}px;
       }
       @media (max-width: 768px) {
         .reader-content {
