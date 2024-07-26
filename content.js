@@ -231,6 +231,11 @@ function toggleOpenDyslexic() {
 
 function toggleReaderMode() {
   siteSettings.readerModeActive = !siteSettings.readerModeActive;
+  if (siteSettings.readerModeActive) {
+    enableReaderMode();
+  } else {
+    disableReaderMode();
+  }
   applySettings();
   saveSettings();
 }
@@ -328,16 +333,10 @@ function applySettings() {
   if (isAnyFeatureActive()) {
     injectStyles();
     updateStyles();
-    if (siteSettings.readerModeActive) {
-      enableReaderMode();
-    }
     document.documentElement.classList.toggle('dark-mode', siteSettings.darkMode);
   } else {
     removeInjectedStyles();
     document.documentElement.classList.remove('dark-mode');
-    if (document.body.classList.contains('reader-mode')) {
-      disableReaderMode();
-    }
   }
 }
 
