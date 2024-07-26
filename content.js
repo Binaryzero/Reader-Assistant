@@ -193,6 +193,7 @@ function updateStyles() {
         padding: 10px;
         border-radius: 5px;
         z-index: 9999;
+        font-size: 14px !important;
       }
       .reader-controls button {
         margin: 0 5px;
@@ -202,6 +203,7 @@ function updateStyles() {
         padding: 5px 10px;
         cursor: pointer;
         border-radius: 3px;
+        font-size: 14px !important;
       }
       .reader-controls button:hover {
         background: ${siteSettings.darkMode ? '#777' : '#bbb'};
