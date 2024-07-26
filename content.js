@@ -264,9 +264,12 @@ function disableReaderMode() {
   location.reload();
 }
 
+import { Readability } from '@mozilla/readability';
+
 function extractMainContent() {
-  const article = document.querySelector('article') || document.querySelector('main') || document.body;
-  return article.innerHTML;
+  const documentClone = document.cloneNode(true);
+  const article = new Readability(documentClone).parse();
+  return article ? article.content : document.body.innerHTML;
 }
 
 function createReaderModeContainer(content) {
