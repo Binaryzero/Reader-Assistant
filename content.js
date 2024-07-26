@@ -85,15 +85,19 @@ function updateStyles() {
     }
 
     html, body {
-      background-color: var(--main-bg) !important;
-      color: var(--main-text) !important;
+      background-color: ${siteSettings.darkMode ? '#222' : '#fff'} !important;
+      color: ${siteSettings.darkMode ? '#ddd' : '#333'} !important;
     }
 
     /* Apply dark mode styles to all elements */
     * {
-      background-color: var(--main-bg) !important;
-      color: var(--main-text) !important;
-      border-color: var(--border-color) !important;
+      color: ${siteSettings.darkMode ? '#ddd' : '#333'} !important;
+      border-color: ${siteSettings.darkMode ? '#444' : '#ccc'} !important;
+    }
+
+    /* Apply background color to block-level elements */
+    div, p, header, footer, nav, article, aside, section, main {
+      background-color: ${siteSettings.darkMode ? '#222' : '#fff'} !important;
     }
 
     /* Preserve original colors for media elements */
